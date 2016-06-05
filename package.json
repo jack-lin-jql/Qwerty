@@ -1,0 +1,25 @@
+{
+  "name": "qwerty",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "node-outlook": "^1.1.5",
+    "simple-oauth2": "^0.7.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JackLinUWaterloo/Qwerty.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JackLinUWaterloo/Qwerty/issues"
+  },
+  "homepage": "https://github.com/JackLinUWaterloo/Qwerty#readme"
+}
