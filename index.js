@@ -2,6 +2,7 @@ var server = require("./server");
 var router = require("./router");
 var authHelper = require("./authHelper");
 var outlook = require("node-outlook");
+var url = require("url");
 
 var handle = {};
 handle["/"] = home;
@@ -9,6 +10,10 @@ handle["/authorize"] = authorize;
 handle["/mail"] = mail;
 handle["/calendar"] = calendar;
 handle["/contacts"] = contacts;
+handle["/sendMail"] = sendMail;
+handle["/createMail"] = createMail;
+handle["/deleteMail"] = deleteMail;
+handle["/sendDraftMail"] = sendDraftMail;
 
 server.start(router.route, handle);
 
@@ -19,7 +24,6 @@ function home(response, request) {
   response.end();
 }
 
-var url = require("url");
 function authorize(response, request) {
   console.log("Request handler 'authorize' was called.");
 
@@ -67,7 +71,7 @@ function mail(response, request) {
     var queryParams = {
       '$select': 'Subject,ReceivedDateTime,From',
       '$orderby': 'ReceivedDateTime desc',
-      '$top': 10
+      '$top': 30
     };
 
     // Set the API endpoint to use the v2.0 endpoint
@@ -90,7 +94,8 @@ function mail(response, request) {
             var from = message.From ? message.From.EmailAddress.Name : "NONE";
             response.write('<tr><td>' + from +
               '</td><td>' + message.Subject +
-              '</td><td>' + message.ReceivedDateTime.toString() + '</td></tr>');
+              '</td><td>' + message.ReceivedDateTime.toString() +
+              '</td><td>' + message.Id + '</td></tr>');
           });
 
           response.write('</table>');
@@ -117,7 +122,7 @@ function calendar(response, request) {
     var queryParams = {
       '$select': 'Subject,Start,End',
       '$orderby': 'Start/DateTime desc',
-      '$top': 10
+      '$top': 30
     };
 
     // Set the API endpoint to use the v2.0 endpoint
@@ -169,7 +174,7 @@ function contacts(response, request) {
     var queryParams = {
       '$select': 'GivenName,Surname,EmailAddresses',
       '$orderby': 'GivenName asc',
-      '$top': 10
+      '$top': 30
     };
 
     // Set the API endpoint to use the v2.0 endpoint
@@ -203,5 +208,194 @@ function contacts(response, request) {
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write('<p> No token found in cookie!</p>');
     response.end();
+  }
+}
+
+function sendMail(response, request) {
+  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
+  console.log("Token found in cookie: ", token);
+  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
+  console.log("Email found in cookie: ", email);
+  if (token) {
+    var newMsg = {
+      Subject: 'Sending New Message Test',
+      Importance: 'Low',
+      Body: {
+        ContentType: 'HTML',
+        Content: 'Sending new message'
+      },
+      ToRecipients: [
+        {
+          EmailAddress: {
+            Address: 'kalinduk.decosta@gmail.com'
+          }
+        }
+      ]
+    };
+
+    // Pass the user's email address
+    var userInfo = {
+      email: 'msfthacksQwerty@outlook.com'
+    };
+
+    // Set the API endpoint to use the v2.0 endpoint
+    outlook.base.setApiEndpoint('https://outlook.office.com/api/v2.0');
+    // Set the anchor mailbox to the user's SMTP address
+    outlook.base.setAnchorMailbox(email);
+
+    outlook.mail.sendNewMessage({token: token, message: newMsg, user: userInfo},
+      function(error, result){
+        if (error) {
+          console.log('sendNewMessage returned an error: ' + error);
+        }
+        else if (result) {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      });
+  }
+  else {
+    console.log('No token found in cookie!');
+  }
+}
+
+function createMail(response, request){
+  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
+  console.log("Token found in cookie: ", token);
+  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
+  console.log("Email found in cookie: ", email);
+  if (token) {
+    var newMsg = {
+      Subject: 'Create Message',
+      Importance: 'Low',
+      Body: {
+        ContentType: 'HTML',
+        Content: 'Create Message Test'
+      },
+      ToRecipients: [
+        {
+          EmailAddress: {
+            Address: 'kalinduk.decosta@gmail.com'
+          }
+        }
+      ]
+    };
+
+    // Pass the user's email address
+    var userInfo = {
+      email: 'msfthacksQwerty@outlook.com'
+    };
+
+    // Set the API endpoint to use the v2.0 endpoint
+    outlook.base.setApiEndpoint('https://outlook.office.com/api/v2.0');
+
+    outlook.mail.createMessage({token: token, message: newMsg, user: userInfo},
+      function(error, result){
+        if (error) {
+          console.log('createNewMessage returned an error: ' + error);
+        }
+        else if (result) {
+          console.log(JSON.stringify(result, null, 2));
+        }
+      });
+  }
+  else {
+    console.log('No token found in cookie!');
+  }
+}
+
+function deleteMail(response, request){
+  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
+  console.log("Token found in cookie: ", token);
+  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
+  console.log("Email found in cookie: ", email);
+  if (token) {
+    var msgId = 'AQMkADAwATNiZmYAZC1mYzIwLTBmMTgtMDACLTAwCgBGAAAD6QCA1xLm2EaHL5fzXNSwxgcA-XRUExMAUJFPq8LDEclywjEAAAIBDwAAAP10VBMTAFCRT6vCwxHJcsIxAAABAVtkAAAA';
+
+    // Pass the user's email address
+    var userInfo = {
+      email: 'msfthacksQwerty@outlook.com'
+    };
+
+    // Set the API endpoint to use the v2.0 endpoint
+    outlook.base.setApiEndpoint('https://outlook.office.com/api/v2.0');
+
+    outlook.mail.deleteMessage({token: token, messageId: msgId, user: userInfo},
+      function(error, result){
+        if (error) {
+          console.log('deleteMessage returned an error: ' + error);
+        }
+        else if (result) {
+          console.log('SUCCESS');
+        }
+      });
+  }
+  else {
+    console.log('No token found in cookie!');
+  }
+}
+
+function updateMail(response, request){
+  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
+  console.log("Token found in cookie: ", token);
+  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
+  console.log("Email found in cookie: ", email);
+  if (token) {
+    var msgId = '';
+
+    var update = {
+      IsRead: false,
+    };
+
+    // Pass the user's email address
+    var userInfo = {
+      email: 'msfthacksQwerty@outlook.com'
+    };
+
+    // Set the API endpoint to use the v2.0 endpoint
+    outlook.base.setApiEndpoint('https://outlook.office.com/api/v2.0');
+
+    outlook.mail.deleteMessage({token: token, messageId: msgId, update: update, user: userInfo},
+      function(error, result){
+        if (error) {
+          console.log('updateMail returned an error: ' + error);
+        }
+        else if (result) {
+          console.log('SUCCESS');
+        }
+      });
+  }
+  else {
+    console.log('No token found in cookie!');
+  }
+}
+
+function sendDraftMail(response, request){
+  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
+  console.log("Token found in cookie: ", token);
+  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
+  console.log("Email found in cookie: ", email);
+  if (token) {
+    var msgId = 'AQMkADAwATNiZmYAZC1mYzIwLTBmMTgtMDACLTAwCgBGAAAD6QCA1xLm2EaHL5fzXNSwxgcA-XRUExMAUJFPq8LDEclywjEAAAIBDwAAAP10VBMTAFCRT6vCwxHJcsIxAAABAVtkAAAA';
+
+    // Pass the user's email address
+    var userInfo = {
+      email: 'msfthacksQwerty@outlook.com'
+    };
+
+    // Set the API endpoint to use the v2.0 endpoint
+    outlook.base.setApiEndpoint('https://outlook.office.com/api/v2.0');
+
+    outlook.mail.sendDraftMessage({token: token, messageId: msgId, user: userInfo},
+      function(error, result){
+        if (error) {
+          console.log('sendDraftMail returned an error: ' + error);
+        }
+        else if (result) {
+          console.log('SUCCESS');
+        }
+      });
+  }
+  else {
+    console.log('No token found in cookie!');
   }
 }
