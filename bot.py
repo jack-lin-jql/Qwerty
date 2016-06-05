@@ -15,6 +15,7 @@ class Bot():
         self._database = database
         
         self._connection = self.connect()
+        self._cursor = self._connection.cursor()
         
     def __str__(self):
         return "connected to: " + self._host
@@ -33,11 +34,21 @@ class Bot():
             print(e)
         
         return 
+    
+    def upload(self, file):
+        fopen = open(file, "r")
+        
+        
+        
+        close(fopen)
             
     def close(self):
+        self._cursor.close()
+        self._connection.commit()
         self._connection.close()
             
 b = Bot()
+b.upload('l')
 b.close()
 
              
