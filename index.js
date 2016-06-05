@@ -15,6 +15,9 @@ handle["/createMail"] = createMail;
 handle["/deleteMail"] = deleteMail;
 handle["/sendDraftMail"] = sendDraftMail;
 
+var token;
+var email;
+
 server.start(router.route, handle);
 
 function home(response, request) {
@@ -60,10 +63,13 @@ function getValueFromCookie(valueName, cookie) {
 }
 
 function mail(response, request) {
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
+
   if (token) {
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write('<div><h1>Your inbox</h1></div>');
@@ -111,10 +117,12 @@ function mail(response, request) {
 }
 
 function calendar(response, request) {
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write('<div><h1>Your calendar</h1></div>');
@@ -163,10 +171,12 @@ function calendar(response, request) {
 }
 
 function contacts(response, request) {
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write('<div><h1>Your contacts</h1></div>');
@@ -212,22 +222,25 @@ function contacts(response, request) {
 }
 
 function sendMail(response, request) {
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  console.log(request);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
     var newMsg = {
-      Subject: 'Sending New Message Test',
-      Importance: 'Low',
+      Subject: request.headers.subject,
+      Importance: request.headers.importance,
       Body: {
         ContentType: 'HTML',
-        Content: 'Sending new message'
+        Content: request.headers.messagecontent
       },
       ToRecipients: [
         {
           EmailAddress: {
-            Address: 'kalinduk.decosta@gmail.com'
+            Address: request.headers.recipientemail
           }
         }
       ]
@@ -259,22 +272,24 @@ function sendMail(response, request) {
 }
 
 function createMail(response, request){
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
     var newMsg = {
-      Subject: 'Create Message',
-      Importance: 'Low',
+      Subject: request.headers.subject,
+      Importance: request.headers.importance,
       Body: {
         ContentType: 'HTML',
-        Content: 'Create Message Test'
+        Content: request.headers.messagecontent
       },
       ToRecipients: [
         {
           EmailAddress: {
-            Address: 'kalinduk.decosta@gmail.com'
+            Address: request.headers.recipientemail
           }
         }
       ]
@@ -304,12 +319,14 @@ function createMail(response, request){
 }
 
 function deleteMail(response, request){
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
-    var msgId = 'AQMkADAwATNiZmYAZC1mYzIwLTBmMTgtMDACLTAwCgBGAAAD6QCA1xLm2EaHL5fzXNSwxgcA-XRUExMAUJFPq8LDEclywjEAAAIBDwAAAP10VBMTAFCRT6vCwxHJcsIxAAABAVtkAAAA';
+    var msgId = request.headers.emailid;
 
     // Pass the user's email address
     var userInfo = {
@@ -335,15 +352,17 @@ function deleteMail(response, request){
 }
 
 function updateMail(response, request){
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
-    var msgId = '';
+    var msgId = request.headers.emailid;
 
     var update = {
-      IsRead: false,
+      IsRead: request.update,
     };
 
     // Pass the user's email address
@@ -370,12 +389,14 @@ function updateMail(response, request){
 }
 
 function sendDraftMail(response, request){
-  var token = getValueFromCookie('qwerty-token', request.headers.cookie);
-  console.log("Token found in cookie: ", token);
-  var email = getValueFromCookie('qwerty-email', request.headers.cookie);
-  console.log("Email found in cookie: ", email);
+  if(request.headers.cookie){
+    token = getValueFromCookie('qwerty-token', request.headers.cookie);
+    console.log("Token found in cookie: ", token);
+    email = getValueFromCookie('qwerty-email', request.headers.cookie);
+    console.log("Email found in cookie: ", email);
+  }
   if (token) {
-    var msgId = 'AQMkADAwATNiZmYAZC1mYzIwLTBmMTgtMDACLTAwCgBGAAAD6QCA1xLm2EaHL5fzXNSwxgcA-XRUExMAUJFPq8LDEclywjEAAAIBDwAAAP10VBMTAFCRT6vCwxHJcsIxAAABAVtkAAAA';
+    var msgId = request.headers.messageid;
 
     // Pass the user's email address
     var userInfo = {
