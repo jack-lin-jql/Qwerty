@@ -1,0 +1,5 @@
+EMAIL,CONTACT,# EMAIL,# EMAIL READ,# EMAIL REPLIED,FLAGGED
+bob@bob.com,0,200,200,120,0
+amazon@amazon.com,0,1051,1021,0,0
+alice@alice.com,1,55,55,50,1
+brian@brian.com,1,100,100,50,1
